@@ -6,6 +6,7 @@ Created on Fri May  5 09:49:09 2017
 @author: dhingratul
 Create a softmax function to translate Scores into probabilities
 as a part of Lesson1, Quiz 10
+To Do: Add legend to the graph
 """
 import numpy as np
 import matplotlib.pyplot as plt
