@@ -148,3 +148,11 @@ def maybe_pickle(data_folders, min_num_images_per_class, force=False):
 
 train_datasets = maybe_pickle(train_folders, 45000)
 test_datasets = maybe_pickle(test_folders, 1800)
+
+"""
+P2: Sample of labels and images frim ndarray
+"""
+n = randint(0, 9)
+with open(train_datasets[n], 'rb') as f:
+    letter = pickle.load(f)
+plt.imshow(letter[0])
