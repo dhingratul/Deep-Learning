@@ -156,3 +156,18 @@ n = randint(0, 9)
 with open(train_datasets[n], 'rb') as f:
     letter = pickle.load(f)
 plt.imshow(letter[0])
+
+"""
+P3: Check for Class Imbalance
+"""
+
+
+def returnLetter(i):
+    # Takes in a number from 0-9, and returns letter corresponding
+    return(chr(i+65))
+
+for i in range(10):
+    with open(train_datasets[i], 'rb') as f:
+        letter = pickle.load(f)
+        print("size of data for class " + returnLetter(i) + " is " +
+              str(len(letter)))
