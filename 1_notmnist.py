@@ -293,3 +293,9 @@ def isOverlap(data1, data2):
                     overlap[i] = []
                 overlap[i].append(j)
     return overlap
+
+"""
+P6: A simple Logistic Regression Model
+
+See 1_LR_notmnist.py
+"""
