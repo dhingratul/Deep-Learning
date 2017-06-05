@@ -150,7 +150,7 @@ train_datasets = maybe_pickle(train_folders, 45000)
 test_datasets = maybe_pickle(test_folders, 1800)
 
 """
-P2: Sample of labels and images frim ndarray
+P2: Sample of labels and images from ndarray
 """
 
 
@@ -177,6 +177,13 @@ for i in range(10):
         letter = pickle.load(f)
         print("size of data for class " + returnLetter(i) + " is " +
               str(len(letter)))
+
+"""
+Merge and prune the training data as needed. Depending on your computer setup,
+you might not be able to fit it all in memory, and you can tune train_size as
+needed. The labels will be stored into a separate array of integers 0 through
+9. Also create a validation dataset for hyperparameter tuning.
+"""
 
 
 def make_arrays(nb_rows, img_size):
@@ -249,3 +256,40 @@ valid_dataset, valid_labels = randomize(valid_dataset, valid_labels)
 P-4: Data still good after shuffling
 """
 dataValidation(test_datasets, randint(0, 9))
+
+""" Finally, let's save the data for later reuse: """
+pickle_file = os.path.join(data_root, 'notMNIST.pickle')
+try:
+    f = open(pickle_file, 'wb')
+    save = {
+            'train_dataset': train_dataset,
+            'train_labels': train_labels,
+            'valid_dataset': valid_dataset,
+            'valid_labels': valid_labels,
+            'test_dataset': test_dataset,
+            'test_labels': test_labels,
+            }
+    pickle.dump(save, f, pickle.HIGHEST_PROTOCOL)
+    f.close()
+except Exception as e:
+    print('Unable to save data to', pickle_file, ':', e)
+    raise
+
+statinfo = os.stat(pickle_file)
+print('Compressed pickle size:', statinfo.st_size)
+
+"""
+P5 : Overlapping Samples
+Adapted from @rndbrtrnd
+"""
+
+
+def isOverlap(data1, data2):
+    overlap = {}
+    for i, I1 in enumerate(data1):
+        for j, I2 in enumerate(data2):
+            if np.array_equal(I1, I2):
+                if i not in overlap.keys():
+                    overlap[i] = []
+                overlap[i].append(j)
+    return overlap
