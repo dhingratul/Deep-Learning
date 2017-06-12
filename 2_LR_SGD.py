@@ -36,8 +36,11 @@ Reformat data as per the requirements of the program, data as a flat matrix,
 and label as one hot encoded vector
 """
 
+image_size = 28
+num_labels = 10
 
-def reformat(data, labels, num_labels, image_size):
+
+def reformat(data, labels):
     """
     Converts the data into a flat matrix, and labels into one-hot encoding
     """
@@ -46,22 +49,17 @@ def reformat(data, labels, num_labels, image_size):
     labels = (np.arange(num_labels) == labels[:, None]).astype(np.float32)
     return data, labels
 
-image_size = 28
-num_labels = 10
-train_dataset, train_labels = reformat(train_dataset, train_labels,
-                                       image_size, num_labels)
-valid_dataset, valid_labels = reformat(valid_dataset, valid_labels,
-                                       image_size, num_labels)
-test_dataset, test_labels = reformat(test_dataset, test_labels,
-                                     image_size, num_labels)
+
+train_dataset, train_labels = reformat(train_dataset, train_labels)
+valid_dataset, valid_labels = reformat(valid_dataset, valid_labels)
+test_dataset, test_labels = reformat(test_dataset, test_labels)
 
 # Training with tf
 batch_size = 5000
 graph = tf.Graph()
 with graph.as_default():
     # Data is treated as tf.constant in the tensorflow graph
-    tf_train_data = train_dataset[:batch_size, :]
-    tf_train_data = tf.constant(tf_train_data)
+    tf_train_data = tf.constant(train_dataset[:batch_size, :])
     tf_train_labels = tf.constant(train_labels[:batch_size])
     tf_valid_data = tf.constant(valid_dataset)
     tf_test_data = tf.constant(test_dataset)
@@ -71,7 +69,7 @@ with graph.as_default():
             tf.truncated_normal([image_size * image_size, num_labels]))
     biases = tf.Variable(tf.zeros([num_labels]))
     # Training computation
-    logits = tf.matmul(tf_train_data * weights) + biases
+    logits = tf.matmul(tf_train_data, weights) + biases
     # Softmax loss
     loss_intermediate = tf.nn.softmax_cross_entropy_with_logits(
             labels=tf_train_labels, logits=logits)
@@ -102,7 +100,7 @@ with tf.Session(graph=graph) as session:
         # Run the computations. We tell .run() that we want to run the
         # optimizer,and get the loss value and the training predictions
         # returned as numpy arrays.
-        _, l, pred = session.run([optimizer, avg_loss, train_predictions])
+        _, l, pred = session.run([optimizer, avg_loss, train_pred])
         if step % 100 == 0:
             print("Loss at step %d: %f" % (step, l))
             print("Training Accuracy: %0.1f%%"
