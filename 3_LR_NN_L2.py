@@ -86,7 +86,7 @@ with graph.as_default():
     beta = 0.01
     regularizer = tf.nn.l2_loss(weights1) + tf.nn.l2_loss(weights2)
     # Take mean over the loss
-    avg_loss = tf.reduce_mean(loss_intermediate + regularizer)
+    avg_loss = tf.reduce_mean(loss_intermediate + beta * regularizer)
     # Gradient Descent Optimizer
     lr = 0.5  # Learning rate
     optimizer = tf.train.GradientDescentOptimizer(lr).minimize(avg_loss)
