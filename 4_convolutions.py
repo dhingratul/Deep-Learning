@@ -117,6 +117,39 @@ with graph.as_default():
         hidden3 = tf.nn.relu(fc1 + layer3_biases)
         predict = tf.matmul(hidden3, layer4_weights) + layer4_biases
         return predict
+
+    def model_max_pool(data, drpout=False):
+        conv1 = tf.nn.conv2d(
+                data, layer1_weights, [1, 1, 1, 1], padding='SAME'
+                )
+        """(input, filter, stride, padding)
+        [1, stride, stride, 1] for NHWC fornat
+        """
+        hidden1 = tf.nn.relu(conv1 + layer1_biases)
+        # 2x2 max pool with stride 2
+        # max_pool(input, filter, stride, padding)
+        pool1 = tf.nn.max_pool(hidden1,
+                               [1, 2, 2, 1], [1, 2, 2, 1], padding='SAME')
+        conv2 = tf.nn.conv2d(
+                pool1, layer2_weights, [1, 1, 1, 1], padding='SAME'
+                )
+        hidden2 = tf.nn.relu(conv2 + layer2_biases)
+        pool2 = tf.nn.max_pool(hidden2,
+                               [1, 2, 2, 1], [1, 2, 2, 1], padding='SAME')
+        # Reshaping for the FC layer
+        shape_hd2 = pool2.get_shape().as_list()
+        # Flatten it out
+        hidden2_rshp = tf.reshape(
+                hidden2,
+                [shape_hd2[0], shape_hd2[1] * shape_hd2[2] * shape_hd2[3]]
+                )
+        fc1 = tf.matmul(hidden2_rshp, layer3_weights)
+        hidden3 = tf.nn.relu(fc1 + layer3_biases)
+        if drpout:
+            hidden3 = tf.nn.dropout(hidden3, 0.5)
+        predict = tf.matmul(hidden3, layer4_weights) + layer4_biases
+        return predict
+
     # Training
     logits = model(tf_train_dataset)
     loss = tf.reduce_mean(
