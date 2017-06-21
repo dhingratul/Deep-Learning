@@ -140,7 +140,7 @@ with graph.as_default():
         shape_hd2 = pool2.get_shape().as_list()
         # Flatten it out
         hidden2_rshp = tf.reshape(
-                hidden2,
+                pool2,
                 [shape_hd2[0], shape_hd2[1] * shape_hd2[2] * shape_hd2[3]]
                 )
         fc1 = tf.matmul(hidden2_rshp, layer3_weights)
@@ -151,7 +151,7 @@ with graph.as_default():
         return predict
 
     # Training
-    logits = model(tf_train_dataset)
+    logits = model_max_pool(tf_train_dataset)
     loss = tf.reduce_mean(
             tf.nn.softmax_cross_entropy_with_logits(
                     labels=tf_train_labels, logits=logits)
@@ -161,8 +161,8 @@ with graph.as_default():
     optimizer = tf.train.GradientDescentOptimizer(lr).minimize(loss)
     # Predictions
     train_pred = tf.nn.softmax(logits)
-    valid_pred = tf.nn.softmax(model(tf_valid_dataset))
-    test_pred = tf.nn.softmax(model(tf_test_dataset))
+    valid_pred = tf.nn.softmax(model_max_pool(tf_valid_dataset))
+    test_pred = tf.nn.softmax(model_max_pool(tf_test_dataset))
 
 # Feeding data to the graph
 num_steps = 1001
