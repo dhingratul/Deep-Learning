@@ -13,13 +13,13 @@ from __future__ import print_function
 import collections
 import math
 import numpy as np
-import os
+# import os
 import random
 import tensorflow as tf
 import zipfile
 from matplotlib import pylab
 from six.moves import range
-from six.moves.urllib.request import urlretrieve
+# from six.moves.urllib.request import urlretrieve
 from sklearn.manifold import TSNE
 
 """
@@ -113,18 +113,18 @@ def generate_batch(batch_size, num_skips, skip_window):
 
 # Train a skip-gram model
 batch_size = 128
-embedding_size = 128 # Dimension of the embedding vector.
-skip_window = 1 # How many words to consider left and right.
-num_skips = 2 # How many times to reuse an input to generate a label.
+embedding_size = 128  # Dimension of the embedding vector.
+skip_window = 1  # How many words to consider left and right.
+num_skips = 2  # How many times to reuse an input to generate a label.
 """
 We pick a random validation set to sample nearest neighbors. here we limit the
 validation samples to the words that have a low numeric ID, which by
 construction are also the most frequent.
 """
-valid_size = 16 # Random set of words to evaluate similarity on.
-valid_window = 100 # Only pick dev samples in the head of the distribution.
+valid_size = 16  # Random set of words to evaluate similarity on.
+valid_window = 100  # Only pick dev samples in the head of the distribution.
 valid_examples = np.array(random.sample(range(valid_window), valid_size))
-num_sampled = 64 # Number of negative examples to sample.
+num_sampled = 64  # Number of negative examples to sample.
 graph = tf.Graph()
 with graph.as_default(), tf.device('/cpu:0'):
     # Input Data
@@ -160,3 +160,31 @@ with graph.as_default(), tf.device('/cpu:0'):
     similarity = tf.matmul(valid_embeddings, tf.transpose(norm_embeddings))
 
 # Access to graph
+num_steps = 100001
+with tf.Session(graph=graph) as sess:
+    tf.global_variables_initializer().run()
+    print("TF Graph Initialized")
+    average_loss = 0
+    for i in range(num_steps):
+        batch_data, batch_labels = generate_batch(
+                batch_size, num_skips, skip_window)
+        feed_dict = {train_data: batch_data, train_labels: batch_labels}
+        _, l = sess.run([optimizer, loss], feed_dict=feed_dict)
+        average_loss += l
+        if i % 2000 == 0:
+            if i > 0:
+                average_loss = average_loss / 2000
+                print('Average loss at step %d: %f' % (i, average_loss))
+        if i % 10000 == 0:
+            sim = similarity.eval()
+            # Random set of words to evaluate similarit on (16)
+            for j in range(valid_size):
+                valid_word = reverse_dictionary[valid_examples[j]]
+                top_k = 8  # Number of NN
+                NN = (-sim[i, :]).argsort()[1: top_k + 1]
+                log = 'Nearest to %s:' % valid_word
+                for k in range(top_k):
+                    close_word = reverse_dictionary[NN[k]]
+                    log = '%s %s,' % (log, close_word)
+                print(log)
+    final_embeddings = norm_embeddings.eval()
